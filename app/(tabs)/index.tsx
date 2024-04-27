@@ -1,31 +1,53 @@
-import { StyleSheet } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, StyleSheet, Image } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { Link } from 'expo-router';
+import { Pokemon, getPokemon } from '@/api/pokeapi';
+import { Ionicons } from '@expo/vector-icons';
 
-import EditScreenInfo from '@/components/EditScreenInfo';
-import { Text, View } from '@/components/Themed';
+const Page = () => {
+    const [pokemon, setPokemon] = useState<Pokemon[]>([]);
 
-export default function TabOneScreen() {
-  return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Tab One</Text>
-      <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
-      <EditScreenInfo path="app/(tabs)/index.tsx" />
-    </View>
-  );
-}
+    useEffect(() => {
+        const load = async () => {
+            const result = await getPokemon();
+            setPokemon(result);
+        };
+        load();
+    }, []);
+
+    return (
+        <ScrollView>
+            {pokemon.map((p) => (
+                <Link href={`/(tabs)/${p.id}`} key={p.id} asChild>
+                    <TouchableOpacity>
+                        <View style={styles.item}>
+                            <Image source={{ uri: p.image }} style={styles.preview} />
+                            <Text style={styles.itemText}>{p.name}</Text>
+                            <Ionicons name="chevron-forward" size={24} />
+                        </View>
+                    </TouchableOpacity>
+                </Link>
+            ))}
+        </ScrollView>
+    );
+};
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  title: {
-    fontSize: 20,
-    fontWeight: 'bold',
-  },
-  separator: {
-    marginVertical: 30,
-    height: 1,
-    width: '80%',
-  },
+    item: {
+        padding: 10,
+        height: 100,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    preview: {
+        width: 100,
+        height: 100,
+    },
+    itemText: {
+        fontSize: 18,
+        textTransform: 'capitalize',
+        flex: 1,
+    },
 });
+export default Page;
